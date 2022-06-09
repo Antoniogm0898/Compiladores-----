@@ -130,9 +130,9 @@ def runVM(cuadruplos, dirFunc, memoriaConst):
         elif cuadruplos[count].op in operadores:
             # Operaciones
             # Revisamos algun valor es pointer 
-            topPointer = checkPointer(cuadruplos[count].top)
-            rightPointer = checkPointer(cuadruplos[count].rightop)
-            leftPointer = checkPointer(cuadruplos[count].leftop)
+            topPointer = checkPointer(cuadruplos[count].top,memoriaTemp)
+            rightPointer = checkPointer(cuadruplos[count].rightop,memoriaTemp)
+            leftPointer = checkPointer(cuadruplos[count].leftop,memoriaTemp)
             pointers = []
 
             # Obtenemos el valor de la memoria
@@ -163,8 +163,8 @@ def runVM(cuadruplos, dirFunc, memoriaConst):
         # Asignacion
         elif cuadruplos[count].op == "=":
             # Revisamos algun valor es pointer arreglo
-            topPointer = checkPointer(cuadruplos[count].top)
-            rightPointer = checkPointer(cuadruplos[count].rightop)
+            topPointer = checkPointer(cuadruplos[count].top,memoriaTemp)
+            rightPointer = checkPointer(cuadruplos[count].rightop,memoriaTemp)
 
             # Obtenemos el modulo de memoria del pointer        
             memoryType = getMemoryModule(rightPointer)
@@ -191,7 +191,7 @@ def runVM(cuadruplos, dirFunc, memoriaConst):
             count += 1
         # Imprimr
         elif cuadruplos[count].op == "print":
-            topPointer = checkPointer(cuadruplos[count].top)
+            topPointer = checkPointer(cuadruplos[count].top,memoriaTemp)
             # Revisamos de cual modulo de memoria vamos a sacar el valor y lo mandamos al logger para imprimr
             memoryType = getMemoryModule(topPointer)
             if memoryType == "constante":  
@@ -207,7 +207,7 @@ def runVM(cuadruplos, dirFunc, memoriaConst):
             
         elif cuadruplos[count].op == "return":
             # Revisamos algun valor es pointer arreglo
-            topPointer = checkPointer(cuadruplos[count].top)
+            topPointer = checkPointer(cuadruplos[count].top,memoriaTemp)
             memoryType = getMemoryModule(cuadruplos[count].top)
             # Revisamos que tipo de memoria tiene el valor a retornar
             if memoryType == "constante":         

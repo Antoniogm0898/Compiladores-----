@@ -1,0 +1,73 @@
+CODIGO INTERMEDIO
+GOTOMAIN,,,20
+<=,4000,0,15000
+GotoF,15000,,5
+return,,,4000
+Goto,,,19
+ERA,,,getFibonacciNumberAt
+-,4000,1,12000
+PARAMETER,12000,par0,
+GOSUB,getFibonacciNumberAt,,0
+=,8002,,12001
+=,12001,,4001
+ERA,,,getFibonacciNumberAt
+-,4000,2,12002
+PARAMETER,12002,par0,
+GOSUB,getFibonacciNumberAt,,0
+=,8002,,12003
+=,12003,,4002
++,4001,4002,12004
+return,,,12004
+ENDFUNC,,,
+=,3,,8000
+ERA,,,getFibonacciNumberAt
+PARAMETER,8000,par0,
+GOSUB,getFibonacciNumberAt,,0
+=,8002,,12005
+=,12005,,8001
+print,,,8000
+print,,,8001
+=,4,,8000
+ERA,,,getFibonacciNumberAt
+PARAMETER,8000,par0,
+GOSUB,getFibonacciNumberAt,,0
+=,8002,,12006
+=,12006,,8001
+print,,,8000
+print,,,8001
+=,5,,8000
+ERA,,,getFibonacciNumberAt
+PARAMETER,8000,par0,
+GOSUB,getFibonacciNumberAt,,0
+=,8002,,12007
+=,12007,,8001
+print,,,8000
+print,,,8001
+=,6,,8000
+ERA,,,getFibonacciNumberAt
+PARAMETER,8000,par0,
+GOSUB,getFibonacciNumberAt,,0
+=,8002,,12008
+=,12008,,8001
+print,,,8000
+print,,,7
+END,,,
+DIRECTORIO DE FUNCIONES
+global
+8000
+8001
+funcion getFibonacciNumberAt
+Memoria 8002
+Vars {'f': {'Type': 'int', 'Memoria': 4000}, 'a': {'Type': 'int', 'Memoria': 4001}, 'b': {'Type': 'int', 'Memoria': 4002}}
+ParamTable int, 
+#VL 3
+#VT 6
+TABLA DE CONSTANTES
+0,1
+1,1
+2,2
+3,10
+4,9
+5,8
+6,7
+7,7

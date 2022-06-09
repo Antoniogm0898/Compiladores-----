@@ -1151,8 +1151,7 @@ def p_cerrarNodes(p):
             indexVal = "intConst"
             result = memoriaVir[indexVal]
             memoriaVir[indexVal] += 1
-            constTable[result] = {"Type" : "int", result : k}
-            directorio_fun[current_func[-1]]["Vars"][current_name]["Nodes"][node].append(k * -1)
+            constTable[result] = {"Type" : "int", result : k * -1}
         dim += 1
     # Generamos la memoria apropiada (size)
     memoryIndex = returnMemoryType(current_func[-1], current_type)

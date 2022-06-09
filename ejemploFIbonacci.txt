@@ -12,8 +12,6 @@ metodos
          escribir(f)
          a = (getFibonacciNumberAt(f-1));
          b = (getFibonacciNumberAt(f-2));
-         escribir(a)
-         escribir(b)
          return (a + b)
     }  
 }
@@ -21,6 +19,15 @@ metodos
   principal(
        first = 10;
        a = getFibonacciNumberAt(first);
-       escribir(a)
+       escribir(first, a)
+       first = 9;
+       a = getFibonacciNumberAt(first);
+       escribir(first, a)
+       first = 8;
+       a = getFibonacciNumberAt(first);
+       escribir(first, a)
+       first = 7;
+       a = getFibonacciNumberAt(first);
+       escribir(first, a)
    
     )
