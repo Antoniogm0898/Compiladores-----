@@ -9,9 +9,8 @@ metodos
             return (f)
         }
         else {
-         escribir(f)
-         a = (getFibonacciNumberAt(f-1));
-         b = (getFibonacciNumberAt(f-2));
+         a = (getFibonacciNumberAt(f - 1));
+         b = (getFibonacciNumberAt(f - 2));
          return (a + b)
     }  
 }

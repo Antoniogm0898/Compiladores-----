@@ -67,8 +67,8 @@ t_EQ = r'=='
 t_NE = r'!='
 t_LOR = r'\|\|'
 t_LAND = r'&&'
-t_CTE_I = r'\d+'
-t_CTE_F = r'((\d*\.\d+)(E[\+-]?\d+)?|([1-9]\d*E[\+-]?\d+))'
+t_CTE_I = r'\-?[0-9]+'
+t_CTE_F = r'-?((\d*\.\d+)(E[\+-]?\d+)?|([1-9]\d*E[\+-]?\d+))'
 t_CTE_S = r'\'.*?\''
 t_RANGE = r'\.\.'
 
@@ -80,6 +80,7 @@ def t_ID(t):
      return t
 
 def t_error(t):
+    print("ERROR: Illegal character " + str(t.value[0]))
     catalogoErrores("ERROR: Illegal character " + str(t.value[0]))
 
 def t_newline(t):
@@ -93,40 +94,52 @@ lex.lex()
 #####################################################################
 
 # Estructuras para el programa
-current_name = None # ID actual
-current_type = None # Tipo actual
-current_func = [] # Una pila para mostrar la funcion actual
-pOper = [""] # Pila de Operandos
-pilaO = [] # Pila de Operadores
-cuad = [] # Cuadruplos
-ptype = [] # Pila de tipos
-pjumps = [] # Pila de saltos
-pelse = [] # Una pila para el if elif else
-saltoselse = []
-vControl = 0 ################################################################################# HAY V CONTROLS QUE NO SE USAN
-cont = 0 # Contador de posicion actual
-countCuad = 0 # Contador para los saltos en ciclos
-parameterCounter = 0 # Contador de cantidad de parametros
-tempcount = 0 # Contador de cantida de temporales
-pParam = [] # Pila con los tipos de los parametros
-paramTable = [] # Tabla de parametros 
-pCurrentCall = [] # Pila para manejar la llamada actual
-constTable = {} # Tabla de constantes
-obj = [] # Arreglo para elementos obj (Cuadruplos, dirFun, consTable)
-dim = 1
-r = 1
-pilaDim = []
-dimNode = ""
-# Vamos a definir las direcciones iniciales para la memoria virtual
-# Para cada modulo de memoria se definen los tipos
-arraux = None
+def iniVariables():
+
+    current_name = None # ID actual
+    current_type = None # Tipo actual
+    dim = 1
+    r = 1
+    dimNode = ""
+    # Vamos a definir las direcciones iniciales para la memoria virtual
+    # Para cada modulo de memoria se definen los tipos
+    arraux = None
+    return current_name, current_type, dim, r, dimNode, arraux
+
+def iniArreglosPilas():
+    pOper = [""] # Pila de Operandos
+    pilaO = [] # Pila de Operadores
+    cuad = [] # Cuadruplos
+    ptype = [] # Pila de tipos
+    pjumps = [] # Pila de saltos
+    pelse = [] # Una pila para el if elif else
+    saltoselse = []
+    pParam = [] # Pila con los tipos de los parametros
+    paramTable = [] # Tabla de parametros   
+    pilaDim = []
+    pCurrentCall = [] # Pila para manejar la llamada actual
+    obj = [] # Arreglo para elementos obj (Cuadruplos, dirFun, consTable)
+    current_func = [] # Una pila para mostrar la funcion actual
+
+    return pOper, pilaO, cuad, ptype, pjumps, pelse, saltoselse, pParam, paramTable, pilaDim, pCurrentCall, obj, current_func
 
 
-# Guardamos las dirreciones dentro de un diccionario
-memoriaVir = {}
 
-# Guardamos los valores de los temporales para reiniciar la memoria cuando se deba
-memoriaTemp = {}
+def iniContadores():
+    cont = 0 # Contador de posicion actual
+    countCuad = 0 # Contador para los saltos en ciclos
+    parameterCounter = 0 # Contador de cantidad de parametros
+    tempcount = 0 # Contador de cantida de temporales    
+    vControl = 0 
+    return cont, countCuad, parameterCounter, tempcount, vControl
+
+def iniDiccionarios():
+    # Guardamos las dirreciones dentro de un diccionario
+    memoriaVir = {}
+    # Guardamos los valores de los temporales para reiniciar la memoria cuando se deba
+    memoriaTemp = {}
+    constTable = {} # Tabla de constantes
+    return memoriaTemp, memoriaVir, constTable
 
 #####################################################################
 ###################             PARSER            ###################
@@ -142,7 +155,9 @@ def p_programa(p):
     current_func.pop()
     ptype = []
     cuad.append(cuadruplos("END","","",""))
+    print("END", len(cuad))
     obj.append(cuad)
+    print(len(obj[0]))
     obj.append(directorio_fun)
     obj.append(constTable)
     del(directorio_fun)
@@ -480,6 +495,7 @@ def p_error(p):
     if p == None:
         editPrintLogger("EOF")
     else:
+        print("ERROR: Error en" + str(p.value) + "favor de revisar el codigo")
         catalogoErrores("ERROR: Error en" + str(p.value) + "favor de revisar el codigo")
 
 #####################################################################
@@ -713,6 +729,7 @@ def p_setmainloc(p):
     setmainloc : 
     '''
     cuad[0] = (cuadruplos("GOTOMAIN", "", "", len(cuad)))
+    print("Set main loc:", len(cuad))
 
 ############################################################
 ##############           ESTATUTOS        ##################
@@ -1203,7 +1220,7 @@ def p_crearCuadB(p):
     temp1 = memoriaVir[indexVal]
     memoriaVir[indexVal] += 1
     # Agregamos el cudadruplo para la suma del offset, si se manda una variable obtenemos la posicion en memoria 
-    cuad.append(cuadruplos('+', int(k), aux, temp1))
+    cuad.append(cuadruplos('+', aux, int(-k), temp1))
     # Generamos memoria para el temporal
     temp2 = memoriaVir[indexVal]
     memoriaVir[indexVal] += 1
@@ -1266,7 +1283,12 @@ def p_increaseDim(p):
 yacc.yacc()
 
 def runLexerParser(fileTxt, filename, valoresMemoria):
-    global memoriaVir, memoriaTemp
+    global current_name, current_type, dim, r, dimNode, arraux, pOper, pilaO, cuad, ptype, pjumps, pelse, saltoselse, pParam, paramTable, pilaDim, pCurrentCall, obj, current_func, cont, countCuad, parameterCounter, tempcount, vControl, memoriaTemp, memoriaVir, constTable
+
+    current_name, current_type, dim, r, dimNode, arraux = iniVariables()
+    pOper, pilaO, cuad, ptype, pjumps, pelse, saltoselse, pParam, paramTable, pilaDim, pCurrentCall, obj, current_func = iniArreglosPilas()
+    cont, countCuad, parameterCounter, tempcount, vControl = iniContadores()
+    memoriaTemp, memoriaVir, constTable = iniDiccionarios()
     # Vamos a definir las direcciones iniciales para la memoria virtual
     # Para cada modulo de memoria se definen los tipos
     particionesDeMemoria = ["intConst", "floatConst", "charConst", "boolConst",
@@ -1282,12 +1304,15 @@ def runLexerParser(fileTxt, filename, valoresMemoria):
 
     # Guardamos los valores de los temporales para reiniciar la memoria cuando se deba
     memoriaTemp = dict(zip(particionesDeMemoria[4:8], memoria[4:8]))
-
-
     
     yacc.parse(fileTxt)
     # logger
     editPrintLogger("Compilacion exitosa!")
 
-    return obj
+
+    auxObj = obj
+    obj = []
+    print(len(auxObj[1]))
+    print(obj)
+    return auxObj
  

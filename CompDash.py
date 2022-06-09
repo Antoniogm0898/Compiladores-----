@@ -12,12 +12,15 @@ def runCode(code, generateOBJ):
     text_file = open("AUXTEXCTX.txt", "w")
     text_file.write(code)
     text_file.close()
-
+    
     file = open("AUXTEXCTX.txt", "r")
+
     fullText =  ""
     for x in file:
         fullText = fullText + x
+    file.close()
 
+    os.remove("AUXTEXCTX.txt")
 
     # Generamos y eliminamos el obj si se pidio
     filename = "NewObj.obj"
@@ -37,7 +40,7 @@ def runCode(code, generateOBJ):
         print("Se imprimio de el obj manera exitosa")
     else:
         cuadruplos, dirFunc, consTable = readOBJ(filename)
-        
+        os.remove(filename)
         # Corremos el codigo 
         runVM(cuadruplos, dirFunc, consTable)
 

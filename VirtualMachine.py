@@ -22,7 +22,6 @@ def getTypeVal(pos, val):
 
 #Agarrar la memoria del pointer
 def getPointer(memaux,temp):
-    
     memaux = memaux.replace("(","")
     memaux = memaux.replace(")","")
     mempos = str(temp[memaux])
@@ -30,7 +29,6 @@ def getPointer(memaux,temp):
 # Si es un pointer asignarle la su repectivo valor de memoria 
 def checkPointer(memVal,temp):
     if "(" in memVal:
-       
         return getPointer(memVal,temp)
     else:
         return  memVal
@@ -126,6 +124,7 @@ def runVM(cuadruplos, dirFunc, memoriaConst):
         if cuadruplos[count].op == "GOTOMAIN":
             # Salta al main
             count = int(cuadruplos[count].top) 
+            
         # Si es un operador  
         elif cuadruplos[count].op in operadores:
             # Operaciones
@@ -165,7 +164,6 @@ def runVM(cuadruplos, dirFunc, memoriaConst):
             # Revisamos algun valor es pointer arreglo
             topPointer = checkPointer(cuadruplos[count].top,memoriaTemp)
             rightPointer = checkPointer(cuadruplos[count].rightop,memoriaTemp)
-
             # Obtenemos el modulo de memoria del pointer        
             memoryType = getMemoryModule(rightPointer)
             if memoryType == "constante":         
@@ -294,7 +292,11 @@ def runVM(cuadruplos, dirFunc, memoriaConst):
             count = int(cuadruplos[count].top) + 1
         
         elif cuadruplos[count].op == "VERIFY":
-            count += 1
+            if int(memoriaConst[cuadruplos[count].rightop]) >= int(cuadruplos[count].leftop) and int(memoriaConst[cuadruplos[count].rightop]) <= int(cuadruplos[count].top):
+                count += 1
+            else:
+                catalogoErrores([12, memoriaConst[cuadruplos[count].rightop]])
+            
         elif cuadruplos[count].op == "ERA":
             # Memory activation 
             paramCounter = 0
