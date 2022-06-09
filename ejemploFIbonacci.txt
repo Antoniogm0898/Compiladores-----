@@ -1,0 +1,26 @@
+programa proyecto;
+ 
+atributos
+    int:  first,a;
+metodos
+   int funcion getFibonacciNumberAt(int f) {
+       int: a, b;
+        if (f <= 1) {
+            return (f)
+        }
+        else {
+         escribir(f)
+         a = (getFibonacciNumberAt(f-1));
+         b = (getFibonacciNumberAt(f-2));
+         escribir(a)
+         escribir(b)
+         return (a + b)
+    }  
+}
+ 
+  principal(
+       first = 10;
+       a = getFibonacciNumberAt(first);
+       escribir(a)
+   
+    )
