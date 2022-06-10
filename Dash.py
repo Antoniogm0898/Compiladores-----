@@ -1,12 +1,13 @@
 import time
-from CompDash import runCode, generateText
+from CompDash import runCode, generateText, runOBJ
 
 from dash import Dash, dcc, html, callback_context
 from dash.dependencies import Input, Output, State
-global currentText, cubrrentOBJ, compilationTime
-from Managers.prtManager import createPrintLogger, readPrinterLogger
+global currentText, currentOBJ, compilationTime
+currentText = None
+currentOBJ = None
+from Managers.prtManager import createPrintLogger, readPrinterLogger, closePrintLogger
 compilationTime = 0
-import sys
 
 createPrintLogger()
 
@@ -56,12 +57,15 @@ app.layout = html.Div([
                     style={'flex' : 1, 
                             'padding' : 10,
                             'height' : "100%", 
-                            'width' : "100%"}),
+                            'width' : "100%", 
+                            'font-size': '22px'}),
             ], style={ 'height' : '90%'}),
             html.Div(children = [
             html.Button('Ejecutar', id='executeCode'),
             html.Button('Crear OBJ', id='crearOBJ'),
             html.Button('Crear TXT', id='crearTXT'),
+            html.Button('Eje .txt', id='execute_txt'),
+            html.Button('Eje .obj', id='execute_obj')
             ], style = {'display': 'flex', 
                         'flex-direction': 'row', 
                         'marginRight' : '10px', 
@@ -100,7 +104,7 @@ app.layout = html.Div([
                     dcc.Interval(id='interval1', interval=1 * 1000, n_intervals=0),
                     dcc.Interval(id='interval2', interval= 100, n_intervals=0),
                     html.H1(id='div-out', children=''),
-                    html.Iframe(id='console-out',srcDoc='',style={'width': '100%','height': "67vh", 'backgroundColor'  : 'white'})
+                    html.Iframe(id='console-out',srcDoc='',style={'width': '100%','height': "67vh", 'backgroundColor'  : 'white', 'font-size': '22px'})
             ])
             ], style={'padding': 10, 
                       'flex': 1, 
@@ -128,7 +132,7 @@ def update_output(content, filename):
         else:
             print("ERROR")
         #runCode(code, generateOBJ)
-        children = [filename,  html.Button('Ejecutar', id='executeText', style={"margin-left": "15px"})]
+        children = [filename]
         return children
     else: 
         return []
@@ -138,18 +142,18 @@ def update_output(content, filename):
               Input('uploadObj', 'contents'),
               State('uploadObj', 'filename'))
 def update_output(content, filename):
-    global cubrrentOBJ
+    global currentOBJ
     if filename != None:
         import base64
         arr = content.split(",")
         if arr[0] == "data:application/octet-stream;base64" or ".obj" not in filename:
             code = base64.b64decode(arr[1])
             currentText = code.decode("utf-8")
-            cubrrentOBJ = currentText.splitlines( )
+            currentOBJ = currentText.splitlines( )
         else:
             print("ERROR")
         #runCode(code, generateOBJ)
-        children = [filename,  html.Button('Ejecutar', id='execute obj', style={"margin-left": "15px"})]
+        children = [filename]
         return children
     else:
         return []
@@ -159,24 +163,38 @@ def update_output(content, filename):
     Input('executeCode', 'n_clicks'),
     Input('crearOBJ', 'n_clicks'),
     Input('crearTXT', 'n_clicks'),
-    Input('textInput', 'value')
+    Input('textInput', 'value'), 
+    Input('execute_txt', 'n_clicks'),
+    Input('execute_obj', 'n_clicks')
 )
-def displayClick(btn1, btn2, btn3, code):
-    global compilationTime
+def displayClick(btn1, btn2, btn3, code, bt4, bt5):
+    global compilationTime, currentText, currentOBJ
     changed_id = [p['prop_id'] for p in callback_context.triggered][0]
     if 'executeCode' in changed_id:
         st = time.time()
-        runCode(code, False)
+        runCode(code, False, False)
         et = time.time()
         compilationTime = et - st
     elif 'crearOBJ' in changed_id:
         st = time.time()
-        runCode(code, True)
+        runCode(code, True, False)
         et = time.time()
         compilationTime = et - st
     # Si el usuario quiere tendra la opcion de descargar el txt
     elif 'crearTXT' in changed_id:
+        print("WHY")
         generateText(code)
+    elif 'execute_txt' in changed_id:
+        if currentText == None:
+            print("NO TXT") 
+        else:
+            runCode(currentText, False, True)
+    elif 'execute_obj' in changed_id:
+        if currentOBJ == None:
+            print("NO OBJ")
+        else:
+            print(runOBJ(currentOBJ))
+        
 
 @app.callback(Output('div-out', 'children'),
     [Input('interval1', 'n_intervals')])

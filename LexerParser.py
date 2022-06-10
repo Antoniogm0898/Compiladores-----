@@ -67,8 +67,13 @@ t_EQ = r'=='
 t_NE = r'!='
 t_LOR = r'\|\|'
 t_LAND = r'&&'
+<<<<<<< HEAD
 t_CTE_I = r'\-?[0-9]+'
 t_CTE_F = r'-?((\d*\.\d+)(E[\+-]?\d+)?|([1-9]\d*E[\+-]?\d+))'
+=======
+t_CTE_I = r'\d+'
+t_CTE_F = r'((\d*\.\d+)(E[\+-]?\d+)?|([1-9]\d*E[\+-]?\d+))'
+>>>>>>> parent of 22d333e (Add files via upload)
 t_CTE_S = r'\'.*?\''
 t_RANGE = r'\.\.'
 
@@ -80,7 +85,10 @@ def t_ID(t):
      return t
 
 def t_error(t):
+<<<<<<< HEAD
     print("ERROR: Illegal character " + str(t.value[0]))
+=======
+>>>>>>> parent of 22d333e (Add files via upload)
     catalogoErrores("ERROR: Illegal character " + str(t.value[0]))
 
 def t_newline(t):
@@ -94,17 +102,15 @@ lex.lex()
 #####################################################################
 
 # Estructuras para el programa
+<<<<<<< HEAD
 def iniVariables():
-
     current_name = None # ID actual
     current_type = None # Tipo actual
-    dim = 1
-    r = 1
     dimNode = ""
     # Vamos a definir las direcciones iniciales para la memoria virtual
     # Para cada modulo de memoria se definen los tipos
     arraux = None
-    return current_name, current_type, dim, r, dimNode, arraux
+    return current_name, current_type, dimNode, arraux
 
 def iniArreglosPilas():
     pOper = [""] # Pila de Operandos
@@ -123,15 +129,14 @@ def iniArreglosPilas():
 
     return pOper, pilaO, cuad, ptype, pjumps, pelse, saltoselse, pParam, paramTable, pilaDim, pCurrentCall, obj, current_func
 
-
-
 def iniContadores():
-    cont = 0 # Contador de posicion actual
     countCuad = 0 # Contador para los saltos en ciclos
     parameterCounter = 0 # Contador de cantidad de parametros
     tempcount = 0 # Contador de cantida de temporales    
-    vControl = 0 
-    return cont, countCuad, parameterCounter, tempcount, vControl
+    vFinal = 0 #llevar cuanta de los vFinales
+    dim = 1 # Dimension actual
+    r = 1 # R incial
+    return countCuad, parameterCounter, tempcount,vFinal, dim, r
 
 def iniDiccionarios():
     # Guardamos las dirreciones dentro de un diccionario
@@ -140,6 +145,42 @@ def iniDiccionarios():
     memoriaTemp = {}
     constTable = {} # Tabla de constantes
     return memoriaTemp, memoriaVir, constTable
+=======
+current_name = None # ID actual
+current_type = None # Tipo actual
+current_func = [] # Una pila para mostrar la funcion actual
+pOper = [""] # Pila de Operandos
+pilaO = [] # Pila de Operadores
+cuad = [] # Cuadruplos
+ptype = [] # Pila de tipos
+pjumps = [] # Pila de saltos
+pelse = [] # Una pila para el if elif else
+saltoselse = []
+vControl = 0 ################################################################################# HAY V CONTROLS QUE NO SE USAN
+cont = 0 # Contador de posicion actual
+countCuad = 0 # Contador para los saltos en ciclos
+parameterCounter = 0 # Contador de cantidad de parametros
+tempcount = 0 # Contador de cantida de temporales
+pParam = [] # Pila con los tipos de los parametros
+paramTable = [] # Tabla de parametros 
+pCurrentCall = [] # Pila para manejar la llamada actual
+constTable = {} # Tabla de constantes
+obj = [] # Arreglo para elementos obj (Cuadruplos, dirFun, consTable)
+dim = 1
+r = 1
+pilaDim = []
+dimNode = ""
+# Vamos a definir las direcciones iniciales para la memoria virtual
+# Para cada modulo de memoria se definen los tipos
+arraux = None
+
+
+# Guardamos las dirreciones dentro de un diccionario
+memoriaVir = {}
+
+# Guardamos los valores de los temporales para reiniciar la memoria cuando se deba
+memoriaTemp = {}
+>>>>>>> parent of 22d333e (Add files via upload)
 
 #####################################################################
 ###################             PARSER            ###################
@@ -151,13 +192,15 @@ def p_programa(p):
     programa : gotomain PROGRAMA addDir ID SEMI programa2
     '''
     # Una vez que termina de correr el programa creamos el OBJ y borramos el directorio de funciones
+<<<<<<< HEAD
+    global directorio_fun, current_func, ptype,obj
+=======
     global directorio_fun, current_func, ptype
+>>>>>>> parent of 22d333e (Add files via upload)
     current_func.pop()
     ptype = []
     cuad.append(cuadruplos("END","","",""))
-    print("END", len(cuad))
     obj.append(cuad)
-    print(len(obj[0]))
     obj.append(directorio_fun)
     obj.append(constTable)
     del(directorio_fun)
@@ -475,6 +518,8 @@ def p_ciclof(p):
     ciclof : FOR ID addForId EQUALS exp genFor TO exp compFor DO LBRACES estatutos RBRACES actFor
     '''
 
+<<<<<<< HEAD
+=======
 #def p_ciclof(p):
 #    '''
 #    ciclof : FOR ciclof2
@@ -491,11 +536,15 @@ def p_ciclof(p):
 #    ciclof3 : ID addForId EQUALS exp genFor TO exp compFor DO LBRACES estatutos RBRACES actFor
 #    '''
 
+>>>>>>> parent of 22d333e (Add files via upload)
 def p_error(p):
     if p == None:
         editPrintLogger("EOF")
     else:
+<<<<<<< HEAD
         print("ERROR: Error en" + str(p.value) + "favor de revisar el codigo")
+=======
+>>>>>>> parent of 22d333e (Add files via upload)
         catalogoErrores("ERROR: Error en" + str(p.value) + "favor de revisar el codigo")
 
 #####################################################################
@@ -623,7 +672,11 @@ def p_checarexp(p):
     checarexp :
     '''
     # Generamos los cuadruplos para las operaciones
+<<<<<<< HEAD
+    global memoriaVir, current_func,countCuad,tempcount
+=======
     global cont, memoriaVir, current_func,countCuad,tempcount
+>>>>>>> parent of 22d333e (Add files via upload)
 
    
     operadores = ['&&', '||', '<', '>', '==', '>=', '<=', '+', '-', '*', '/', '%']
@@ -656,7 +709,10 @@ def p_checarexp(p):
             # Se agrega a la pila de operadores y tipos
             pilaO.append(result)
             ptype.append(resultType)
+<<<<<<< HEAD
+=======
             cont += 1
+>>>>>>> parent of 22d333e (Add files via upload)
 
 # Si es una constante int, float, char o bool se agregan a su respectivo lugar
 # Se genera un indice de memoria para 
@@ -729,7 +785,6 @@ def p_setmainloc(p):
     setmainloc : 
     '''
     cuad[0] = (cuadruplos("GOTOMAIN", "", "", len(cuad)))
-    print("Set main loc:", len(cuad))
 
 ############################################################
 ##############           ESTATUTOS        ##################
@@ -749,13 +804,20 @@ def p_cuadprint(p):
     # Incrementamos el contador
     countCuad +=1
     
+<<<<<<< HEAD
+=======
 
+>>>>>>> parent of 22d333e (Add files via upload)
 # Lee
 def p_cuadlee(p):
     '''
     cuadlee : 
     '''
+<<<<<<< HEAD
+    global pilaO, memoriaVir, tempcount, countCuad, current_type, constTable
+=======
     global pilaO, memoriaVir, tempcount, cont, countCuad, current_type, constTable
+>>>>>>> parent of 22d333e (Add files via upload)
     # Obtenemos el valor a leer
     resultado = pilaO.pop()
     # Obtenemos la memoria temporal e incrementamos y apunta a la siguiente direccion disponible
@@ -767,7 +829,10 @@ def p_cuadlee(p):
     cuad.append(aux)
     # Incrementamos los contadores
     countCuad +=1
+<<<<<<< HEAD
+=======
     cont += 1
+>>>>>>> parent of 22d333e (Add files via upload)
     tempcount += 1
 
 # Retorna
@@ -804,7 +869,11 @@ def p_genGTF(p):
     genGTF : 
     '''
     # Generamos el primer cuadruplo para goToF, guardamos su posicion para el jump a futuro
+<<<<<<< HEAD
+    global pilaO, pjumps, pelse, countCuad
+=======
     global pilaO, pjumps, pelse, cont, countCuad
+>>>>>>> parent of 22d333e (Add files via upload)
     # Obtenemos el valor booleano para el if
     resultado = pilaO.pop()
     # Generamos el cuadruplo
@@ -817,7 +886,10 @@ def p_genGTF(p):
         saltoselse.append({"if" : len(cuad) - 1})
     # Incrementamos los contadores
     countCuad += 1
+<<<<<<< HEAD
+=======
     cont += 1
+>>>>>>> parent of 22d333e (Add files via upload)
 
 # Generamos el cuadruplo GOTO para else, guardamos su posicion para el jump a futuro
 def p_genGT(p):
@@ -912,8 +984,17 @@ def p_addForId(p):
     '''
     addForId : 
     '''
+<<<<<<< HEAD
+    global pilaO, current_name,memoriaVir
+    # Agregamos el valor a su pila
+    #arreglar for -- poner una memoria para el id del for
+    result, memoriaVir = obtenMemVir(current_func[-1], "int", memoriaVir, 1)
+    # Agregamos a la id a la memoria local
+    directorio_fun[current_func[-1]]["Vars"][p[-1]] = newVar(directorio_fun[current_func[-1]]["Vars"], p[-1], "int", result)
+=======
     global pilaO, current_name
     # Agregamos el valor a su pila
+>>>>>>> parent of 22d333e (Add files via upload)
     pilaO.append(directorio_fun[current_func[-1]]["Vars"][p[-1]]["Memoria"])
     current_name = p[-1]
 
@@ -928,11 +1009,16 @@ def p_genFor(p):
         # Obtenemos el valor de su respectiva pila
         exp = pilaO.pop()
         pOper.append(p[-1])
+<<<<<<< HEAD
+        vc = pilaO[-1]
+        cuad.append(cuadruplos("=",exp,"",vc))
+=======
         result, memoriaVir = obtenMemVir(current_func[-1], current_type, memoriaVir, 1)
         # Agregamos a la funcion el vControl
         directorio_fun[current_func[-1]]["Vars"]["vControl"] = newVar(directorio_fun[current_func[-1]]["Vars"], "vControl", current_type, result)
         # crear el cuadruplo de control para el for
         cuad.append(cuadruplos("=",exp,"",result))
+>>>>>>> parent of 22d333e (Add files via upload)
         # Incrementamos el contado
         countCuad +=1
     else:
@@ -943,7 +1029,11 @@ def p_compFor(p):
     '''
     compFor : 
     '''    
+<<<<<<< HEAD
+    global pilaO, current_type, memoriaVir, current_func, directorio_fun, pjumps, countCuad, cuad, vFinal
+=======
     global pilaO, current_type, memoriaVir, current_func, directorio_fun, pjumps, countCuad, cuad, cont
+>>>>>>> parent of 22d333e (Add files via upload)
     # Obtenemos el valor de su respectiva pila
     exp = pilaO.pop()
     # Revisar que el valor sea entero
@@ -951,9 +1041,15 @@ def p_compFor(p):
         # Obtenemos el la direccion virtual: Regresamos el valor y actualizamos la memoria
         result, memoriaVir = obtenMemVir(current_func[-1], current_type, memoriaVir, 1)
         # Se genera vFinal en el directorio de funciones
+<<<<<<< HEAD
+        directorio_fun[current_func[-1]]["Vars"]["vFinal"+ str(vFinal)] = newVar(directorio_fun[current_func[-1]]["Vars"], "vFinal" + str(vFinal), current_type, result)
+        # Obtenemos el vControl
+        vFinal += 1   
+=======
         directorio_fun[current_func[-1]]["Vars"]["vFinal"] = newVar(directorio_fun[current_func[-1]]["Vars"], "vFinal", current_type, result)
         # Obtenemos el vControl
         vControl = directorio_fun[current_func[-1]]["Vars"]["vControl"]["Memoria"]
+>>>>>>> parent of 22d333e (Add files via upload)
         # Generamos temporal
         resultado = memoriaVir["intTemp"]
         memoriaVir["intTemp"] += 1
@@ -961,7 +1057,11 @@ def p_compFor(p):
         cuad.append(cuadruplos('=',exp,"",result))
         countCuad +=1
         # Cuadruplo comparar vFinal y vControl
+<<<<<<< HEAD
+        cuad.append(cuadruplos('<',pilaO[-1],result,resultado))
+=======
         cuad.append(cuadruplos('<',vControl,result,resultado))
+>>>>>>> parent of 22d333e (Add files via upload)
         countCuad +=1
         # Agregamos la poscion para el salto
         pjumps.append(len(cuad) - 1)
@@ -970,7 +1070,10 @@ def p_compFor(p):
         countCuad +=1
         # Apendamos los valores e incrementamos el contador
         pjumps.append(len(cuad) - 1)
+<<<<<<< HEAD
+=======
         cont += 1
+>>>>>>> parent of 22d333e (Add files via upload)
     else:
         catalogoErrores([8])
 
@@ -981,7 +1084,10 @@ def p_actFor(p):
     '''
     global directorio_fun, current_func, memoriaVir, cuad, countCuad, pjumps, pilaO
     # Obtenemos el vControl
+<<<<<<< HEAD
+=======
     vControl = directorio_fun[current_func[-1]]["Vars"]["vControl"]["Memoria"]
+>>>>>>> parent of 22d333e (Add files via upload)
     resultado = memoriaVir["intTemp"]
     memoriaVir["intTemp"] += 1
     # Cuadruplo sumar 1 al contol
@@ -990,10 +1096,18 @@ def p_actFor(p):
     result = memoriaVir[indexVal]
     memoriaVir[indexVal] += 1
     constTable[result] = {"Type" : "int", result : 1}
+<<<<<<< HEAD
+    #arreglar for---quitar v control poner la variable 
+    cuad.append(cuadruplos('+',pilaO[-1],result,resultado))
+    countCuad +=1
+    # Cuadruplo asignar el resultado al control
+    cuad.append(cuadruplos('=',resultado,"",pilaO[-1]))
+=======
     cuad.append(cuadruplos('+',vControl,result,resultado))
     countCuad +=1
     # Cuadruplo asignar el resultado al control
     cuad.append(cuadruplos('=',resultado,"",vControl))
+>>>>>>> parent of 22d333e (Add files via upload)
     countCuad +=1
     # Cuadruplo asignar resultado al id original
     cuad.append(cuadruplos('=',resultado,"",pilaO[-1]))
@@ -1015,7 +1129,10 @@ def p_actFor(p):
 ##############           FUNCIONES       ##################
 ###########################################################
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> parent of 22d333e (Add files via upload)
 #- Definicion de la funcion
 # Parametros
 def p_newParamType(p):
@@ -1041,7 +1158,11 @@ def p_genParameter(p):
     '''
     genParameter : 
     '''
+<<<<<<< HEAD
+    global pilaO, ptype, cuad, paramTable, parameterCounter
+=======
     global pilaO, ptype, cuad, paramTable
+>>>>>>> parent of 22d333e (Add files via upload)
     # Obtener el tipo y valor de sus pilas
     argument = pilaO.pop()
     argumentType = ptype.pop()
@@ -1089,7 +1210,11 @@ def p_verLastParam(p):
     '''
     verLastParam : 
     '''
+<<<<<<< HEAD
+    global pCurrentCall, paramTable, cuad , pilaO ,parameterCounter, tempcount, directorio_fun, memoriaVir
+=======
     global pCurrentCall, paramTable, cuad ,cont, pilaO ,parameterCounter, tempcount, directorio_fun, memoriaVir
+>>>>>>> parent of 22d333e (Add files via upload)
     if parameterCounter + 1 != len(paramTable):
         catalogoErrores([5])
     else:
@@ -1108,7 +1233,10 @@ def p_verLastParam(p):
             ptype.append(directorio_fun[currentCall]["Type"])
             cuad.append(cuadruplos("=",result,"",result1 - 1))
             parameterCounter = 0
+<<<<<<< HEAD
+=======
             cont += 1
+>>>>>>> parent of 22d333e (Add files via upload)
         paramTable = []
 
 ##########################################################
@@ -1145,8 +1273,14 @@ def p_cerrarNodes(p):
     '''
     cerrarNodes :
     '''
+<<<<<<< HEAD
+    global current_func, directorio_fun, current_name, dim, r, k,memoriaVir, current_type, ptype, pilaO, constTable
+    # Volvemos a declarar las variables a utlizar
+ 
+=======
     global current_func, directorio_fun, current_name, dim, r, k
     # Volvemos a declarar las variables a utlizar
+>>>>>>> parent of 22d333e (Add files via upload)
     dim = 1
     offset = 0
     size = r
@@ -1162,15 +1296,32 @@ def p_cerrarNodes(p):
         offset = offset + li * m
         # Mientras que haya otro nodo el la lista apendamos m, si no (-k)
         if lenNodes != dim:
+<<<<<<< HEAD
+            memoriaVir, ptype, current_type, pilaO = generaMemoriaConst("intConst", memoriaVir, "int", ptype, pilaO)
+            constTable[pilaO[-1]] = {"Type" : current_type, pilaO[-1] :int(m)}
+            ptype.pop()
+            directorio_fun[current_func[-1]]["Vars"][current_name]["Nodes"][node].append(pilaO.pop())
+=======
             directorio_fun[current_func[-1]]["Vars"][current_name]["Nodes"][node].append(m)
+>>>>>>> parent of 22d333e (Add files via upload)
         else:
             k = offset
             indexVal = "intConst"
             result = memoriaVir[indexVal]
             memoriaVir[indexVal] += 1
-            constTable[result] = {"Type" : "int", result : k * -1}
+<<<<<<< HEAD
+            constTable[result] = {"Type" : "int", result :(k * -1)}
+            directorio_fun[current_func[-1]]["Vars"][current_name]["Nodes"][node].append(result)
+
         dim += 1
     # Generamos la memoria apropiada (size)
+
+=======
+            constTable[result] = {"Type" : "int", result : k}
+            directorio_fun[current_func[-1]]["Vars"][current_name]["Nodes"][node].append(k * -1)
+        dim += 1
+    # Generamos la memoria apropiada (size)
+>>>>>>> parent of 22d333e (Add files via upload)
     memoryIndex = returnMemoryType(current_func[-1], current_type)
     memoriaVir[memoryIndex] += size
 
@@ -1179,11 +1330,29 @@ def p_crearCuadA(p):
     '''
     crearCuadA : 
     '''
+<<<<<<< HEAD
+    global dimNode, cuad, tempcount, pilaO, pilaDim, memoriaVir, directorio_fun, current_name,arraux, ptype, current_type
+    # Ingresar poner dirrecion de memoria a los limites
+    memoriaVir, ptype, current_type, pilaO = generaMemoriaConst("intConst", memoriaVir, "int", ptype, pilaO)
+    constTable[pilaO[-1]] = {"Type" : current_type, pilaO[-1] :dimNode[0]}
+    pilaO.pop()
+    ptype.pop()
+   
+    memoriaVir, ptype, current_type, pilaO = generaMemoriaConst("intConst", memoriaVir, "int", ptype, pilaO)
+    constTable[pilaO[-1]] = {"Type" : current_type, pilaO[-1] :dimNode[1]}
+    pilaO.pop()
+    ptype.pop()
+    # Obtenemos el numero que se le ingreso al arreglo
+    resultado = pilaO[-1]
+    # Cuadruplo verify.
+    cuad.append(cuadruplos("VERIFY",resultado , dimNode[0], dimNode[1]))
+=======
     global dimNode, cuad, tempcount, pilaO, pilaDim, memoriaVir, directorio_fun, current_name,arraux
     # Obtenemos el numero que se le ingreso al arreglo
     resultado = pilaO[-1]
     # Cuadruplo verify.
     cuad.append(cuadruplos("VERIFY",resultado ,dimNode[0], dimNode[1]))
+>>>>>>> parent of 22d333e (Add files via upload)
     # Si tiene otro nodo por seguir
     current_name = arraux
     if (pilaDim[-1] + 1) in directorio_fun[current_func[-1]]["Vars"][current_name]["Nodes"]:
@@ -1193,10 +1362,15 @@ def p_crearCuadA(p):
         result, memoriaVir = obtenMemVir("Temp", current_type, memoriaVir, 1)
         tempcount += 1
         # Ingresamos m a la memoria
+<<<<<<< HEAD
+        cuad.append(cuadruplos('*',aux,int(m),result))
+        # Ingresar la memoria en lista
+=======
         memoriaVir, ptype, current_type, pilaO = generaMemoriaConst("intConst", memoriaVir, "int", ptype, pilaO)
         constTable[pilaO[-1]] = {"Type" : current_type, pilaO[-1] :int(m)}
         ptype.pop()
         cuad.append(cuadruplos('*',aux,int(m),result))
+>>>>>>> parent of 22d333e (Add files via upload)
         pilaO.append(directorio_fun[current_func[-1]]["Vars"][current_name]['Memoria'])
     if pilaDim[-1] > 1:
         # Se va haciendo la sumatoria de los calculos del offset
@@ -1208,25 +1382,45 @@ def p_crearCuadA(p):
         cuad.append(cuadruplos('+',aux2, auxAddress,result))
         pilaO.append(result)
     
+<<<<<<< HEAD
+=======
 
+>>>>>>> parent of 22d333e (Add files via upload)
 def p_crearCuadB(p):
     '''
     crearCuadB : 
     '''
+<<<<<<< HEAD
+    global pilaO, cuad, k,ptype,current_type,memoriaVir, current_name, directorio_fun, constTable
+=======
     global pilaO, cuad, k
+>>>>>>> parent of 22d333e (Add files via upload)
     # Generamos la memoria virtual para los cuadruplos de matrices
     aux = pilaO.pop()
     indexVal = returnMemoryType("Temp", current_type)
     temp1 = memoriaVir[indexVal]
     memoriaVir[indexVal] += 1
     # Agregamos el cudadruplo para la suma del offset, si se manda una variable obtenemos la posicion en memoria 
-    cuad.append(cuadruplos('+', aux, int(-k), temp1))
+<<<<<<< HEAD
+    cuad.append(cuadruplos('+',  aux, int(directorio_fun[current_func[-1]]["Vars"][current_name]["Nodes"][pilaDim[-1]][-1]),  temp1))
+    # Generamos memoria para el temporal
+    temp2 = memoriaVir[indexVal]
+    memoriaVir[indexVal] += 1
+    # Agregamos el cuadruplo, pooner el arreglo y su memoria  en direccion base
+    virtualAddress = directorio_fun[current_func[-1]]["Vars"][current_name]["Memoria"]
+    memoriaVir, ptype, current_type, pilaO = generaMemoriaConst("intConst", memoriaVir, "int", ptype, pilaO)
+    constTable[pilaO[-1]] = {"Type" : current_type, pilaO[-1] :virtualAddress}
+    ptype.pop()
+    cuad.append(cuadruplos('+', temp1, pilaO.pop(), temp2))
+=======
+    cuad.append(cuadruplos('+', int(k), aux, temp1))
     # Generamos memoria para el temporal
     temp2 = memoriaVir[indexVal]
     memoriaVir[indexVal] += 1
     # Agregamos el cuadruplo 
     virtualAddress = directorio_fun[current_func[-1]]["Vars"][current_name]["Memoria"]
     cuad.append(cuadruplos('+', temp1, virtualAddress, temp2))
+>>>>>>> parent of 22d333e (Add files via upload)
 
 def p_agregarVar(p):
     '''
@@ -1282,13 +1476,17 @@ def p_increaseDim(p):
 
 yacc.yacc()
 
-def runLexerParser(fileTxt, filename, valoresMemoria):
-    global current_name, current_type, dim, r, dimNode, arraux, pOper, pilaO, cuad, ptype, pjumps, pelse, saltoselse, pParam, paramTable, pilaDim, pCurrentCall, obj, current_func, cont, countCuad, parameterCounter, tempcount, vControl, memoriaTemp, memoriaVir, constTable
-
-    current_name, current_type, dim, r, dimNode, arraux = iniVariables()
+<<<<<<< HEAD
+def runLexerParser(fileTxt, valoresMemoria):
+    global current_name, current_type, dim, r, dimNode, arraux, pOper, pilaO, cuad, ptype, pjumps, pelse, saltoselse, pParam, paramTable, pilaDim, pCurrentCall, obj, current_func, countCuad, parameterCounter, tempcount, memoriaTemp, memoriaVir, constTable, vFinal
+    current_name, current_type, dimNode, arraux = iniVariables()
     pOper, pilaO, cuad, ptype, pjumps, pelse, saltoselse, pParam, paramTable, pilaDim, pCurrentCall, obj, current_func = iniArreglosPilas()
-    cont, countCuad, parameterCounter, tempcount, vControl = iniContadores()
+    countCuad, parameterCounter, tempcount, vFinal, dim, r = iniContadores()
     memoriaTemp, memoriaVir, constTable = iniDiccionarios()
+=======
+def runLexerParser(fileTxt, filename, valoresMemoria):
+    global memoriaVir, memoriaTemp
+>>>>>>> parent of 22d333e (Add files via upload)
     # Vamos a definir las direcciones iniciales para la memoria virtual
     # Para cada modulo de memoria se definen los tipos
     particionesDeMemoria = ["intConst", "floatConst", "charConst", "boolConst",
@@ -1304,15 +1502,15 @@ def runLexerParser(fileTxt, filename, valoresMemoria):
 
     # Guardamos los valores de los temporales para reiniciar la memoria cuando se deba
     memoriaTemp = dict(zip(particionesDeMemoria[4:8], memoria[4:8]))
+<<<<<<< HEAD
+=======
+
+
     
+>>>>>>> parent of 22d333e (Add files via upload)
     yacc.parse(fileTxt)
     # logger
     editPrintLogger("Compilacion exitosa!")
 
-
-    auxObj = obj
-    obj = []
-    print(len(auxObj[1]))
-    print(obj)
-    return auxObj
+    return obj
  

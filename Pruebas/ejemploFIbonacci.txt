@@ -1,0 +1,44 @@
+programa proyecto;
+ 
+atributos
+    int:  first,a;
+metodos
+   int funcion getFibonacciNumberAt(int f) {
+       int: a, b;
+        if (f <= 1) {
+            return (f)
+        }
+        else {
+<<<<<<< HEAD:Pruebas/ejemploFIbonacci.txt
+         a = (getFibonacciNumberAt(f - 1));
+         b = (getFibonacciNumberAt(f - 2));
+=======
+         escribir(f)
+         a = (getFibonacciNumberAt(f-1));
+         b = (getFibonacciNumberAt(f-2));
+         escribir(a)
+         escribir(b)
+>>>>>>> parent of 22d333e (Add files via upload):ejemploFIbonacci.txt
+         return (a + b)
+    }  
+}
+ 
+  principal(
+       first = 10;
+       a = getFibonacciNumberAt(first);
+<<<<<<< HEAD:Pruebas/ejemploFIbonacci.txt
+       escribir(first, a)
+       first = 9;
+       a = getFibonacciNumberAt(first);
+       escribir(first, a)
+       first = 8;
+       a = getFibonacciNumberAt(first);
+       escribir(first, a)
+       first = 7;
+       a = getFibonacciNumberAt(first);
+       escribir(first, a)
+=======
+       escribir(a)
+>>>>>>> parent of 22d333e (Add files via upload):ejemploFIbonacci.txt
+   
+    )

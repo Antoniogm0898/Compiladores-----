@@ -1,3 +1,5 @@
+import os 
+
 def createPrintLogger():
     f = open("printLogger.txt", "w")
     return f
@@ -11,3 +13,6 @@ def editPrintLogger(newLine):
 def readPrinterLogger():
     f = open("printLogger.txt", "r")
     return f
+
+def closePrintLogger():
+    os.remove("printLogger.txt")

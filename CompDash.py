@@ -1,13 +1,15 @@
 from LexerParser import runLexerParser
 #from VirtualMachine import runVM
-from Managers.objManager import readOBJ, writeOBJ
+from Managers.objManager import readOBJ, writeOBJ, onlyOBJ
+from Managers.prtManager import editPrintLogger
 from VirtualMachine import runVM
 import os
 
 memoria = []
 
 # Ejecucion del codigo
-def runCode(code, generateOBJ):
+def runCode(code, generateOBJ, loadedText):
+    print(code)
     # Cambios el codigo a TXT y lo parseamos
     text_file = open("AUXTEXCTX.txt", "w")
     text_file.write(code)
@@ -34,10 +36,15 @@ def runCode(code, generateOBJ):
         else:
             created = True
 
-    obj = runLexerParser(fullText, filename, memoria)
+    obj = runLexerParser(fullText, memoria)
     writeOBJ(filename, obj)
+
+
     if generateOBJ:
-        print("Se imprimio de el obj manera exitosa")
+        editPrintLogger("Se imprimio de el " + filename + " manera exitosa")
+    elif loadedText:
+        cuadruplos, dirFunc, consTable = readOBJ(filename)
+        runVM(cuadruplos, dirFunc, consTable)
     else:
         cuadruplos, dirFunc, consTable = readOBJ(filename)
         os.remove(filename)
@@ -59,4 +66,9 @@ def generateText(code):
             text_file.write(code)
             text_file.close()
             created = True
-    print("Impresion exitosa")
+    editPrintLogger("Impresion exitosa")
+
+
+def runOBJ(code):
+    cuadArr, dirFunc, consTable = onlyOBJ(code)
+    runVM(cuadArr, dirFunc, consTable)

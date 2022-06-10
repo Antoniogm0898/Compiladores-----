@@ -26,5 +26,7 @@ def catalogoErrores(error):
         sys.exit("Error: Llamando dimensiones dentro de una variable no arreglo " + str(error[1]))
     elif error[0] == 11:
         sys.exit("Error: Final de codigo inseperado")
+    elif error[0] == 12:
+        sys.exit("Error: Valor fuera del rango del arreglo " + str(error[1]))
     else:
         sys.exit(error[0])
