@@ -1,12 +1,19 @@
 import time
-from CompDash import runCode, generateText, runOBJ
 
+from numpy import outer
+from CompDash import runCode, generateText, runOBJ
+import pandas as pd
+import plotly.express as px
 from dash import Dash, dcc, html, callback_context
 from dash.dependencies import Input, Output, State
-global currentText, currentOBJ, compilationTime
+global currentText, currentOBJ, compilationTime, cCode, cOBJ, compTable, compArray
+compTable = pd.DataFrame()
+compArray = []
 currentText = None
 currentOBJ = None
-from Managers.prtManager import createPrintLogger, readPrinterLogger, closePrintLogger
+cCode = ""
+cOBJ = ""
+from Managers.prtManager import createPrintLogger, readPrinterLogger
 compilationTime = 0
 
 createPrintLogger()
@@ -57,7 +64,7 @@ app.layout = html.Div([
                     style={'flex' : 1, 
                             'padding' : 10,
                             'height' : "100%", 
-                            'width' : "100%", 
+                            'width' : "95%", 
                             'font-size': '22px'}),
             ], style={ 'height' : '90%'}),
             html.Div(children = [
@@ -68,6 +75,7 @@ app.layout = html.Div([
             html.Button('Eje .obj', id='execute_obj')
             ], style = {'display': 'flex', 
                         'flex-direction': 'row', 
+                        'marginLeft' : '10px',
                         'marginRight' : '10px', 
                         'marginTop' : '5px'}),
         ], style={'padding': 10, 
@@ -101,21 +109,66 @@ app.layout = html.Div([
                 ),
                 html.Div(id = "objFileName", style={'whiteSpace': 'pre-line'}),
                 html.Div([
-                    dcc.Interval(id='interval1', interval=1 * 1000, n_intervals=0),
-                    dcc.Interval(id='interval2', interval= 100, n_intervals=0),
-                    html.H1(id='div-out', children=''),
-                    html.Iframe(id='console-out',srcDoc='',style={'width': '100%','height': "67vh", 'backgroundColor'  : 'white', 'font-size': '22px'})
-            ])
-            ], style={'padding': 10, 
-                      'flex': 1, 
-                      'display': 'flex', 
-                      'flex-direction': 'column', 
-                      'backgroundColor' : '#d1d7d7', 
-                      'height' : '82vh'}),
+                        dcc.Tabs([
+                            dcc.Tab(label='Compilador', children = [
+                                html.Div([
+                                    dcc.Interval(id='interval1', interval=1 * 1000, n_intervals=0),
+                                    dcc.Interval(id='interval2', interval= 100, n_intervals=0),
+                                    html.H1(id='div-out', children=''),
+                                    html.Iframe(id='console-out',srcDoc='',style={'width': '100%','height': "63vh", 'backgroundColor'  : 'white', 'font-size': '22px'})
+                                ])
+
+                            ]), 
+                            dcc.Tab(label='Cuadruplos / Codigo', children = [
+                                html.Div([
+                                    html.Div([
+                                        html.H1('Cuadruplos'), 
+                                        html.Div(id='cuadruplosOutput', children = [
+                                            "Aqui iran cuadruplos generados"
+                                        ], style={'whiteSpace': 'pre-line', 'backgroundColor' : '#d1d7d7', 'height' : "60vh", 'width' : '70%', 
+                                        'backgroundColor' : 'white', "display": "flex", "justifyContent": "center", 'padding' : 10,'font-size': '18px', "overflow": "scroll"})
+                                    ], style = {'padding': 10, 'flex': 1,  'display': 'flex', 'flex-direction': 'column', 'backgroundColor' : '#d1d7d7', 'align-items': 'center', 'justify-content': 'center'}),
+                                    html.Div([
+                                        html.H1('Código'), 
+                                        html.Div(id='textOutput', children = [
+                                            "Aqui iran el codigo utlizado"
+                                        ], style={'whiteSpace': 'pre-line', 'backgroundColor' : '#d1d7d7', 'height' : "60vh", 'width' : '70%', 
+                                        'backgroundColor' : 'white', "display": "flex", "justifyContent": "center", 'padding' : 10, 'textAlign' : "left", 'font-size': '18px', "overflow": "scroll"})
+                                    ], style = {'padding': 10, 'flex': 1,  'display': 'flex', 'flex-direction': 'column', 'backgroundColor' : '#d1d7d7', 'align-items': 'center', 'justify-content': 'center'})
+                                ], style = {'width' : "100%", 'textAlign' : "center", 'display': 'flex', 'flex-direction': 'row'})
+                            ]), 
+                            dcc.Tab(label='Graficos de compilacion', children = [
+                                html.Div([                   
+                                    html.Div([
+                                        html.H1('Tiempo de Compilación'), 
+                                        html.Div(id = "compilationTime", children = [
+                                              "Aqui iran los Tiempos de compilacion", "Aqui iran los Tiempos de compilacion"
+                                        ], style = {'width' : "100%", 'textAlign' : "center", 'whiteSpace': 'pre-line', 'backgroundColor' : 'white', 'height' : "60vh", 'width' : '100%'})    
+                                    ], style = {'padding': 10, 'flex-direction': 'column', 'backgroundColor' : '#d1d7d7', 'align-items': 'center', 'justify-content': 'center', 'width' : "15rem"}),
+                                    html.Div([
+                                        html.H1('Grafica de Compilación'), 
+                                        dcc.Graph(id="compilationGraph")
+                                    ], style = {'padding': 10, 'flex': 1,  'display': 'flex', 'flex-direction': 'column', 'backgroundColor' : '#d1d7d7', 'align-items': 'center', 'justify-content': 'center'}),
+                                    ], style = {'width' : "100%", 'textAlign' : "center", 'display': 'flex', 'flex-direction': 'row'})
+                            ]), 
+                            dcc.Tab(label='Graficos de memoria', children = [
+                                html.Div([
+                                ], style = {'backgroundColor' : 'green'})
+                            ]), 
+                            ]),
+                        
+                        ])
+                ], style={'padding': 10, 
+                            'flex': 1, 
+                            'display': 'flex', 
+                            'flex-direction': 'column', 
+                            'backgroundColor' : '#d1d7d7', 
+                            'height' : '82vh'}),
             ], style={'width' : "100%", 'textAlign' : "center",
                     'display': 'flex', 'flex-direction': 'row'}),
             html.Div(id="TextDiv", children = [])
         ], style={'backgroundColor' : '#878683', "overflowY": "auto", "overflowX": "auto"})
+
 
 
 @app.callback(Output('TextName', 'children'),
@@ -159,7 +212,10 @@ def update_output(content, filename):
         return []
 
 @app.callback(
-    Output('TextDiv', 'children'), 
+    Output('cuadruplosOutput', 'children'),
+    Output('textOutput', 'children'),
+    Output('compilationTime', 'children'),
+    Output('compilationGraph', 'figure'),
     Input('executeCode', 'n_clicks'),
     Input('crearOBJ', 'n_clicks'),
     Input('crearTXT', 'n_clicks'),
@@ -168,33 +224,98 @@ def update_output(content, filename):
     Input('execute_obj', 'n_clicks')
 )
 def displayClick(btn1, btn2, btn3, code, bt4, bt5):
-    global compilationTime, currentText, currentOBJ
+    global compilationTime, currentText, currentOBJ, cCode, cOBJ, compArray
     changed_id = [p['prop_id'] for p in callback_context.triggered][0]
     if 'executeCode' in changed_id:
         st = time.time()
-        runCode(code, False, False)
+        cCode, cOBJ = runCode(code, False, False)
         et = time.time()
         compilationTime = et - st
+        cOBJ = parseCuad(cOBJ)        
+        compArray.append(compilationTime)
+        compList = parseCompTime(compArray)
+        figComp = plotCompGraph(compArray)
+        return cOBJ, cCode, compList, figComp
     elif 'crearOBJ' in changed_id:
         st = time.time()
-        runCode(code, True, False)
+        cCode, cOBJ = runCode(code, True, False)
         et = time.time()
         compilationTime = et - st
+        cOBJ = parseCuad(cOBJ)
+        compArray.append(compilationTime)
+        compList = parseCompTime(compArray)
+        figComp = plotCompGraph(compArray)
+        return cOBJ, cCode, compList, figComp
     # Si el usuario quiere tendra la opcion de descargar el txt
     elif 'crearTXT' in changed_id:
-        print("WHY")
         generateText(code)
     elif 'execute_txt' in changed_id:
         if currentText == None:
             print("NO TXT") 
         else:
-            runCode(currentText, False, True)
+            cCode, cOBJ = runCode(currentText, False, True)
+            cOBJ = parseCuad(cOBJ)
+            compArray.append(compilationTime)
+            parseCompTime(compArray)
+            figComp = plotCompGraph(compArray)
+            return cOBJ, cCode, compList, figComp
     elif 'execute_obj' in changed_id:
         if currentOBJ == None:
             print("NO OBJ")
         else:
-            print(runOBJ(currentOBJ))
-        
+            cCode = ""
+            st = time.time()
+            cOBJ = runOBJ(currentOBJ)
+            et = time.time()
+            compilationTime = et - st
+            cOBJ = parseCuad(cOBJ)
+            compArray.append(compilationTime)
+            compList = parseCompTime(compArray)
+            figComp = plotCompGraph(compArray)
+            return cOBJ, cCode, compList, figComp
+
+
+    return "", "", "", plotCompGraph(compArray)
+
+def parseCuad(cuad):
+    c = 0
+    st = ""
+    for item in cuad:
+       st += str(c) + ".  " + str(item.op) + ",  " + str(item.rightop) + ",  " + str(item.leftop) + ",  " + str(item.top) + "\n"
+       print(st) 
+       c += 1   
+       
+    return st
+
+def parseCompTime(compArr):
+    st = ""
+    for value in compArr:
+        st += str(round(value, 5)) + "\n"
+
+    return st
+
+def plotCompGraph(array):
+    array = array[-50:]
+    df = pd.DataFrame()
+    df["Comp Time"] = array
+    df["At"] = df.index
+    
+    fig = px.line(df, 
+              x="At", 
+              y="Comp Time", 
+              labels={
+                     "Comp Time": "Tiempo en ejecutar (s)",
+                     "At": "compilación"
+              },
+              title='Tiempo de compilación')
+    fig.update_layout(
+        font_family="Times New Roman",
+        font_color="Black",
+        title_font_family="Times New Roman",
+        width=1000, height=700,
+        title_font_color="Black",
+    )
+    return fig
 
 @app.callback(Output('div-out', 'children'),
     [Input('interval1', 'n_intervals')])
@@ -217,5 +338,7 @@ def update_output(n):
     file.close()
     return data
 
+
 if __name__ == '__main__':
     app.run_server(debug=True)
+

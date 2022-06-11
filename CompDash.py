@@ -9,7 +9,6 @@ memoria = []
 
 # Ejecucion del codigo
 def runCode(code, generateOBJ, loadedText):
-    print(code)
     # Cambios el codigo a TXT y lo parseamos
     text_file = open("AUXTEXCTX.txt", "w")
     text_file.write(code)
@@ -52,6 +51,9 @@ def runCode(code, generateOBJ, loadedText):
         runVM(cuadruplos, dirFunc, consTable)
 
 
+    return fullText, cuadruplos
+
+
 # Generacion archivo txt
 def generateText(code):
     created = False
@@ -72,3 +74,5 @@ def generateText(code):
 def runOBJ(code):
     cuadArr, dirFunc, consTable = onlyOBJ(code)
     runVM(cuadArr, dirFunc, consTable)
+
+    return cuadArr

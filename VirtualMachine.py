@@ -4,7 +4,6 @@ from Managers.prtManager import editPrintLogger
 # Ingresa una posicion y un valor para que se retorne su tipo
 def getTypeVal(pos, val):
     pos = round((int(pos) / 1000)) % 4
-   
     if val is None:
         return val
     if pos == 0:
@@ -22,24 +21,13 @@ def getTypeVal(pos, val):
 
 #Agarrar la memoria del pointer
 def getPointer(memaux,temp):
-<<<<<<< HEAD
     memaux = memaux.replace("(","")
     memaux = memaux.replace(")","")
     mempos = str(temp[str(memaux)])
-=======
-    
-    memaux = memaux.replace("(","")
-    memaux = memaux.replace(")","")
-    mempos = str(temp[memaux])
->>>>>>> parent of 22d333e (Add files via upload)
     return mempos
 # Si es un pointer asignarle la su repectivo valor de memoria 
 def checkPointer(memVal,temp):
     if "(" in memVal:
-<<<<<<< HEAD
-=======
-       
->>>>>>> parent of 22d333e (Add files via upload)
         return getPointer(memVal,temp)
     else:
         return  memVal
@@ -95,7 +83,6 @@ def getMemoryModule(address):
 # FUncion que recibe la dirrecion de memoria, su valor y le asigna el tipo correcto. Retorna este valor
 def getMemoryType(addresVal, val):
     # Calculo para predecir el tipo
-<<<<<<< HEAD
 
     addrsNumber = round(int(addresVal) / 1000) % 4
     if addrsNumber ==  0:
@@ -104,21 +91,15 @@ def getMemoryType(addresVal, val):
 
         val = int(float(val))   
         
-=======
-    addrsNumber = round(int(addresVal) / 1000) % 4
-    if addrsNumber ==  0:
-        val = int(val)
->>>>>>> parent of 22d333e (Add files via upload)
     elif addrsNumber == 1:
         val = float(val)
     elif addrsNumber == 2:
         val = str(val)
     else:
-        val = bool(val)
-<<<<<<< HEAD
-=======
-
->>>>>>> parent of 22d333e (Add files via upload)
+        if val == 'False':
+            val = False
+        else:
+            val = True
     return val
 
 # Funcion para correr la maquina virtual
@@ -149,48 +130,28 @@ def runVM(cuadruplos, dirFunc, memoriaConst):
         if cuadruplos[count].op == "GOTOMAIN":
             # Salta al main
             count = int(cuadruplos[count].top) 
-<<<<<<< HEAD
             
-=======
->>>>>>> parent of 22d333e (Add files via upload)
         # Si es un operador  
         elif cuadruplos[count].op in operadores:
             # Operaciones
             # Revisamos algun valor es pointer 
-<<<<<<< HEAD
             topPointer = checkPointer(cuadruplos[count].top,memoriaTemp)
             rightPointer = checkPointer(cuadruplos[count].rightop,memoriaTemp)
             leftPointer = checkPointer(cuadruplos[count].leftop,memoriaTemp)
             
-=======
-            topPointer = checkPointer(cuadruplos[count].top)
-            rightPointer = checkPointer(cuadruplos[count].rightop)
-            leftPointer = checkPointer(cuadruplos[count].leftop)
->>>>>>> parent of 22d333e (Add files via upload)
             pointers = []
-
             # Obtenemos el valor de la memoria
             for item in [int(rightPointer), int(leftPointer)]:
                 memoryType = getMemoryModule(item)
                 if memoryType == "constante":
-<<<<<<< HEAD
                     val = getMemoryType(int(item), memoriaConst[str(item)])        
-=======
-                    val = getMemoryType(int(item), memoriaConst[str(item)])          
->>>>>>> parent of 22d333e (Add files via upload)
                 elif memoryType == "local": 
                     val = getMemoryType(int(item), memoriaLocal[-1][str(item)]) 
                 elif memoryType == "global":
                     val = getMemoryType(int(item), memoriaGlobal[str(item)]) 
                 else:
                     val = getMemoryType(int(item), memoriaTemp[str(item)]) 
-<<<<<<< HEAD
                 pointers.append(val)
-=======
-
-                pointers.append(val)
-                
->>>>>>> parent of 22d333e (Add files via upload)
             # Asignamos la memoria en un su pila correcta
             memoryType = getMemoryModule(topPointer)
             if memoryType == "constante":         
@@ -205,14 +166,8 @@ def runVM(cuadruplos, dirFunc, memoriaConst):
         # Asignacion
         elif cuadruplos[count].op == "=":
             # Revisamos algun valor es pointer arreglo
-<<<<<<< HEAD
             topPointer = checkPointer(cuadruplos[count].top,memoriaTemp)
             rightPointer = checkPointer(cuadruplos[count].rightop,memoriaTemp)
-=======
-            topPointer = checkPointer(cuadruplos[count].top)
-            rightPointer = checkPointer(cuadruplos[count].rightop)
-
->>>>>>> parent of 22d333e (Add files via upload)
             # Obtenemos el modulo de memoria del pointer        
             memoryType = getMemoryModule(rightPointer)
             if memoryType == "constante":         
@@ -238,11 +193,7 @@ def runVM(cuadruplos, dirFunc, memoriaConst):
             count += 1
         # Imprimr
         elif cuadruplos[count].op == "print":
-<<<<<<< HEAD
             topPointer = checkPointer(cuadruplos[count].top,memoriaTemp)
-=======
-            topPointer = checkPointer(cuadruplos[count].top)
->>>>>>> parent of 22d333e (Add files via upload)
             # Revisamos de cual modulo de memoria vamos a sacar el valor y lo mandamos al logger para imprimr
             memoryType = getMemoryModule(topPointer)
             if memoryType == "constante":  
@@ -258,11 +209,7 @@ def runVM(cuadruplos, dirFunc, memoriaConst):
             
         elif cuadruplos[count].op == "return":
             # Revisamos algun valor es pointer arreglo
-<<<<<<< HEAD
             topPointer = checkPointer(cuadruplos[count].top,memoriaTemp)
-=======
-            topPointer = checkPointer(cuadruplos[count].top)
->>>>>>> parent of 22d333e (Add files via upload)
             memoryType = getMemoryModule(cuadruplos[count].top)
             # Revisamos que tipo de memoria tiene el valor a retornar
             if memoryType == "constante":         
@@ -349,7 +296,6 @@ def runVM(cuadruplos, dirFunc, memoriaConst):
             count = int(cuadruplos[count].top) + 1
         
         elif cuadruplos[count].op == "VERIFY":
-<<<<<<< HEAD
             memoryType = getMemoryModule(cuadruplos[count].rightop)
             if memoryType == "constante":         
                 val = int(memoriaConst[cuadruplos[count].rightop])
@@ -365,9 +311,6 @@ def runVM(cuadruplos, dirFunc, memoriaConst):
             else:
                 catalogoErrores([12, memoriaConst[cuadruplos[count].rightop]])
             
-=======
-            count += 1
->>>>>>> parent of 22d333e (Add files via upload)
         elif cuadruplos[count].op == "ERA":
             # Memory activation 
             paramCounter = 0
