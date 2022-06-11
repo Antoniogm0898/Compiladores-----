@@ -6,7 +6,7 @@ import pandas as pd
 import plotly.express as px
 from dash import Dash, dcc, html, callback_context
 from dash.dependencies import Input, Output, State
-global currentText, currentOBJ, compilationTime, cCode, cOBJ, compTable, compArray
+global currentText, currentOBJ, compilationTime, cCode, cOBJ, compTable, compArray, compList
 compTable = pd.DataFrame()
 compArray = []
 currentText = None
@@ -152,8 +152,29 @@ app.layout = html.Div([
                                     ], style = {'width' : "100%", 'textAlign' : "center", 'display': 'flex', 'flex-direction': 'row'})
                             ]), 
                             dcc.Tab(label='Graficos de memoria', children = [
-                                html.Div([
-                                ], style = {'backgroundColor' : 'green'})
+                                html.Div([                   
+                                    html.Div([
+                                        dcc.Graph(id="mainPie")  
+                                    ], style = {'padding': 10, 'flex-direction': 'column', 'backgroundColor' : '#d1d7d7', 'align-items': 'center', 'justify-content': 'center', 'display': 'flex', 'marginTop' : '20px'}),
+                                    html.Div([
+                                        html.Div([
+                                            html.Div([
+                                                html.Div(id ="global Pie", children = [
+                                                    dcc.Graph(id="pie1")
+                                                ], style = {'flex-direction': 'column', 'align-items': 'center', 'justify-content': 'center', 'width' : "100%"}),
+                                                html.Div(id ="local Pie", children = [
+                                                    dcc.Graph(id="pie2")
+                                                ], style = {'flex-direction': 'column', 'align-items': 'center', 'justify-content': 'center', 'width' : "100%"}),
+                                                html.Div(id ="temp Pie", children = [
+                                                    dcc.Graph(id="pie3")
+                                                ], style = {'flex-direction': 'column', 'align-items': 'center', 'justify-content': 'center', 'width' : "100%"}),
+                                                html.Div(id ="const Pie", children = [
+                                                    dcc.Graph(id="pie4")
+                                                ], style = {'flex-direction': 'column', 'align-items': 'center', 'justify-content': 'center', 'width' : "100%"})
+                                            ], style = {'width' : "100%", 'textAlign' : "center", 'display': 'flex', 'flex-direction': 'row'})
+                                        ], style = {'width' : "100%", 'textAlign' : "center", 'display': 'flex', 'flex-direction': 'column'})
+                                    ], style = {'padding': 10, 'flex': 1,  'display': 'flex', 'flex-direction': 'row', 'backgroundColor' : '#d1d7d7', 'align-items': 'center', 'justify-content': 'center'}),
+                                ], style = {'width' : "100%", 'textAlign' : "center", 'display': 'flex', 'flex-direction': 'column',  'height' :  '100%'})
                             ]), 
                             ]),
                         
@@ -216,6 +237,11 @@ def update_output(content, filename):
     Output('textOutput', 'children'),
     Output('compilationTime', 'children'),
     Output('compilationGraph', 'figure'),
+    Output('mainPie', 'figure'),
+    Output('pie1', 'figure'),
+    Output('pie2', 'figure'),
+    Output('pie3', 'figure'),
+    Output('pie4', 'figure'),
     Input('executeCode', 'n_clicks'),
     Input('crearOBJ', 'n_clicks'),
     Input('crearTXT', 'n_clicks'),
@@ -224,28 +250,30 @@ def update_output(content, filename):
     Input('execute_obj', 'n_clicks')
 )
 def displayClick(btn1, btn2, btn3, code, bt4, bt5):
-    global compilationTime, currentText, currentOBJ, cCode, cOBJ, compArray
+    global compilationTime, currentText, currentOBJ, cCode, cOBJ, compArray, compList
     changed_id = [p['prop_id'] for p in callback_context.triggered][0]
     if 'executeCode' in changed_id:
         st = time.time()
         cCode, cOBJ = runCode(code, False, False)
         et = time.time()
         compilationTime = et - st
+        mainPie, arrPie = plotPieGraphs(cOBJ)
         cOBJ = parseCuad(cOBJ)        
         compArray.append(compilationTime)
         compList = parseCompTime(compArray)
         figComp = plotCompGraph(compArray)
-        return cOBJ, cCode, compList, figComp
+        return cOBJ, cCode, compList, figComp, mainPie, arrPie[0], arrPie[1], arrPie[2], arrPie[3] 
     elif 'crearOBJ' in changed_id:
         st = time.time()
         cCode, cOBJ = runCode(code, True, False)
         et = time.time()
         compilationTime = et - st
+        mainPie, arrPie = plotPieGraphs(cOBJ)
         cOBJ = parseCuad(cOBJ)
         compArray.append(compilationTime)
         compList = parseCompTime(compArray)
         figComp = plotCompGraph(compArray)
-        return cOBJ, cCode, compList, figComp
+        return cOBJ, cCode, compList, figComp, mainPie, arrPie[0], arrPie[1], arrPie[2], arrPie[3] 
     # Si el usuario quiere tendra la opcion de descargar el txt
     elif 'crearTXT' in changed_id:
         generateText(code)
@@ -253,12 +281,16 @@ def displayClick(btn1, btn2, btn3, code, bt4, bt5):
         if currentText == None:
             print("NO TXT") 
         else:
+            st = time.time()
             cCode, cOBJ = runCode(currentText, False, True)
+            et = time.time()
+            compilationTime = et - st
+            mainPie, arrPie = plotPieGraphs(cOBJ)
             cOBJ = parseCuad(cOBJ)
             compArray.append(compilationTime)
-            parseCompTime(compArray)
+            compList = parseCompTime(compArray)
             figComp = plotCompGraph(compArray)
-            return cOBJ, cCode, compList, figComp
+            return cOBJ, cCode, compList, figComp, mainPie, arrPie[0], arrPie[1], arrPie[2], arrPie[3] 
     elif 'execute_obj' in changed_id:
         if currentOBJ == None:
             print("NO OBJ")
@@ -268,21 +300,27 @@ def displayClick(btn1, btn2, btn3, code, bt4, bt5):
             cOBJ = runOBJ(currentOBJ)
             et = time.time()
             compilationTime = et - st
+            mainPie, arrPie = plotPieGraphs(cOBJ)
             cOBJ = parseCuad(cOBJ)
             compArray.append(compilationTime)
             compList = parseCompTime(compArray)
             figComp = plotCompGraph(compArray)
-            return cOBJ, cCode, compList, figComp
+            return cOBJ, cCode, compList, figComp, mainPie, arrPie[0], arrPie[1], arrPie[2], arrPie[3] 
 
 
-    return "", "", "", plotCompGraph(compArray)
+    return "", "", "", plotCompGraph(compArray), auxPie(), auxPie(), auxPie(), auxPie(), auxPie()
+
+def auxPie():
+    df = pd.DataFrame(columns=["Memory", "Size"])
+    fig = px.pie(df, values='Memory', names='Size', color_discrete_sequence=px.colors.sequential.RdBu)
+
+    return fig
 
 def parseCuad(cuad):
     c = 0
     st = ""
     for item in cuad:
        st += str(c) + ".  " + str(item.op) + ",  " + str(item.rightop) + ",  " + str(item.leftop) + ",  " + str(item.top) + "\n"
-       print(st) 
        c += 1   
        
     return st
@@ -316,6 +354,89 @@ def plotCompGraph(array):
         title_font_color="Black",
     )
     return fig
+
+def plotPieGraphs(cuad):
+    memoryVals = []
+    memoryType = []
+    memoryModule = []
+    for item in cuad:
+        for cuadruplo in [item.rightop, item.leftop, item.top]:
+            if cuadruplo.isnumeric() and item.op not in ["GOTOMAIN", "GotoF", "Goto", "GOSUB"]:
+                memoryVals.append(int(cuadruplo))
+    memoryVals = list(dict.fromkeys(memoryVals))
+
+    memoryVals.sort()
+
+    for item in memoryVals:
+        itemClas = round((int(item) / 1000)) % 4
+        if itemClas == 0:
+            memoryType.append("int")
+        elif itemClas == 1:
+            memoryType.append("float")
+        elif itemClas == 2:
+            memoryType.append("char")
+        else:
+            memoryType.append("bool")
+
+    for item in memoryVals:
+        itemClas = int(item / 4000)
+        if itemClas == 0:
+            memoryModule.append("constante")
+        elif itemClas == 1:
+            memoryModule.append("local")
+        elif itemClas == 2:
+            memoryModule.append("global")
+        else:
+            memoryModule.append("temporal")
+    df = pd.DataFrame()
+    df["Vals"] = memoryVals
+    df["Type"] = memoryType
+    df["Module"] = memoryModule
+    df["Unique"] = df["Module"] + " " + df["Type"]
+
+    #df.groupby(['Unique'], sort=False)['Vals'].max()
+    df = df.groupby(['Unique', "Module"], sort=False)['Vals'].max().reset_index(drop = False)
+
+    cont = 1000
+    for item in ["constante int", "constante float", "constante char", "constante bool", "local int", "local float", "local char", "local bool",
+                 "global int", "global float", "global char", "global bool", "temporal int", "temporal float", "temporal char", "temporal bool"]:
+                
+        if item in df['Unique'].unique():
+            val = df[df["Unique"] == item]["Vals"]
+            mod = df[df["Unique"] == item]["Module"] 
+
+            index = df.index[df['Unique'] == item].tolist()[-1]
+            df.at[index, "Vals"] = list(val)[-1] - (cont - 1000)
+            df = df.append({'Unique': "Disp " + item, "Module" : list(mod)[-1], "Vals":cont - list(val)[-1]}, ignore_index=True)
+        else:
+            if "constante" in item:
+                df = df.append({'Unique': "Disp " + item, "Module" : "constante", "Vals": 1000}, ignore_index=True)
+            elif "local" in item:
+                df = df.append({'Unique': "Disp " + item, "Module" : "local", "Vals": 1000}, ignore_index=True)
+            elif "temporal" in item:
+                df = df.append({'Unique': "Disp " + item, "Module" : "temporal", "Vals": 1000}, ignore_index=True)
+            else:
+                df = df.append({'Unique': "Disp " + item, "Module" : "global", "Vals": 1000}, ignore_index=True)
+        cont += 1000
+
+    # General
+    figMain = px.pie(df, values='Vals', names='Unique', color_discrete_sequence=px.colors.sequential.RdBu)
+    figMain.update_traces(textposition='inside')
+    figMain.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    figMain.update_layout( title_text= "Memoria Virtual", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', margin=dict(t=0, b=0, l=0, r=0))
+    # Modular
+    arrFigs = []
+    for modulo in ["constante", "local", "global", "temporal"]:
+        auxdf = df[df['Module'] == modulo]
+        fig = px.pie(auxdf, values='Vals', names='Unique', color_discrete_sequence=px.colors.sequential.RdBu)
+        fig.update_traces(textposition='inside')
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+        fig.update_layout(title_text= "Memoria " + modulo.capitalize(), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', margin=dict(t=0, b=0, l=0, r=0))
+        arrFigs.append(fig)
+
+    return figMain, arrFigs
+
+
 
 @app.callback(Output('div-out', 'children'),
     [Input('interval1', 'n_intervals')])

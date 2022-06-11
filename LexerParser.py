@@ -15,7 +15,6 @@ from Managers.prtManager import editPrintLogger
 reserved = {
     'if' : 'IF',
     'else' : 'ELSE',
-    'elif' : 'ELSEIF',
     'for' : 'FOR',
     'while' : 'WHILE',
     'do' : 'DO',
@@ -109,8 +108,6 @@ def iniArreglosPilas():
     cuad = [] # Cuadruplos
     ptype = [] # Pila de tipos
     pjumps = [] # Pila de saltos
-    pelse = [] # Una pila para el if elif else
-    saltoselse = []
     pParam = [] # Pila con los tipos de los parametros
     paramTable = [] # Tabla de parametros   
     pilaDim = []
@@ -118,7 +115,7 @@ def iniArreglosPilas():
     obj = [] # Arreglo para elementos obj (Cuadruplos, dirFun, consTable)
     current_func = [] # Una pila para mostrar la funcion actual
 
-    return pOper, pilaO, cuad, ptype, pjumps, pelse, saltoselse, pParam, paramTable, pilaDim, pCurrentCall, obj, current_func
+    return pOper, pilaO, cuad, ptype, pjumps, pParam, paramTable, pilaDim, pCurrentCall, obj, current_func
 
 def iniContadores():
     countCuad = 0 # Contador para los saltos en ciclos
@@ -330,17 +327,30 @@ def p_f(p):
     '''
     global current_type,current_name, directorio_fun, pilaO, ptype
     # En caso que se este tratando de hacer una llamada o obtener una variable 
+    
     if len(p) == 2 and p[1] != None:
         # Verificamos que la variable exista en la tabla
-        if p[1] in directorio_fun[current_func[-1]]["Vars"]:          
-            current_name = p[1] 
-            # Agregamos la direccion de memoria a la pila
-            pilaO.append(directorio_fun[current_func[-1]]["Vars"][p[1]]["Memoria"])
-            if p[1] != None:
-                # Si el tipo de llamada no es void se agrega el tipo a la pila
-                ptype.append(directorio_fun[current_func[-1]]["Vars"][current_name]["Type"])
+        if current_func[-1] == 'global' and len(current_func) > 1:
+
+            if p[1] in directorio_fun[current_func[-2]]["Vars"]:          
+                current_name = p[1] 
+                # Agregamos la direccion de memoria a la pila
+                pilaO.append(directorio_fun[current_func[-2]]["Vars"][p[1]]["Memoria"])
+                if p[1] != None:
+                    # Si el tipo de llamada no es void se agrega el tipo a la pila
+                    ptype.append(directorio_fun[current_func[-2]]["Vars"][current_name]["Type"])
+            else:
+                catalogoErrores([7, p[1]])
         else:
-            catalogoErrores([7, p[1]])
+            if p[1] in directorio_fun[current_func[-1]]["Vars"]:          
+                current_name = p[1] 
+                # Agregamos la direccion de memoria a la pila
+                pilaO.append(directorio_fun[current_func[-1]]["Vars"][p[1]]["Memoria"])
+                if p[1] != None:
+                    # Si el tipo de llamada no es void se agrega el tipo a la pila
+                    ptype.append(directorio_fun[current_func[-1]]["Vars"][current_name]["Type"])
+            else:
+                catalogoErrores([7, p[1]])
 
 def p_f2(p):
     '''
@@ -375,6 +385,7 @@ def p_estatutos2(p):
 def p_asigna(p):
     '''
     asigna : ID EQUALS push_id exp SEMI
+           | ID EQUALS push_id lee SEMI
            | ID LBRACKET agregarVar verifyAEx addFakeBottom exp crearCuadA f2 EQUALS push_id exp SEMI
     '''
     # Vamos a asignar un "valor" a una direccion virtual
@@ -418,13 +429,7 @@ def p_llamada2(p):
 # Lectura
 def p_lee(p):
     '''
-    lee : LEE LPAREN exp cuadlee lee2
-    '''
-
-def p_lee2(p):
-    '''
-    lee2 : COMMA exp cuadlee lee2
-         | RPAREN
+    lee : LEE LPAREN cuadlee RPAREN
     '''
 
 # Escribir
@@ -443,17 +448,16 @@ def p_condicion(p):
     '''
     condicion : IF condicion2
     '''
-
+    
 def p_condicion2(p):
     '''
-    condicion2 : LPAREN exp RPAREN genGTF condicion3 ELSEIF genGT condicion2
-               | LPAREN exp RPAREN genGTF condicion3 ELSE genGT condicion3 
-               | LPAREN exp RPAREN genGTF condicion3 
+    condicion2 : LPAREN exp RPAREN genGTF condicion3 ELSE genGT condicion3 fillGoto
+               | LPAREN exp RPAREN genGTF condicion3 fillGoto
     '''
 
 def p_condicion3(p):
     '''
-    condicion3 : LBRACES estatutos fillGoto RBRACES 
+    condicion3 : LBRACES estatutos RBRACES 
     '''
 
 # Ciclo While
@@ -473,8 +477,7 @@ def p_error(p):
     if p == None:
         editPrintLogger("EOF")
     else:
-        print("ERROR: Error en" + str(p.value) + "favor de revisar el codigo")
-        catalogoErrores("ERROR: Error en" + str(p.value) + "favor de revisar el codigo")
+        catalogoErrores("ERROR: Error en" + str(p.value) + " favor de revisar el codigo")
 
 #####################################################################
 ##############           PUNTOS NEURALGICOS         #################
@@ -530,9 +533,11 @@ def p_addDir(p):
                 "Type" : current_type,
                 "Vars" : None
             }
-
+        if current_type != 'void':
             result, memoriaVir = obtenMemVir("global",current_type,memoriaVir,1)
             directorio_fun[current_func[-1]]["Memoria"] = result
+        else:
+            directorio_fun[current_func[-1]]["Memoria"] = None
 
 # Actualizacion de estructuras
 def p_setCurrentID(p):
@@ -682,7 +687,7 @@ def p_push_id(p):
     '''
     push_id : 
     '''   
-    global pilaO
+    global pilaO, pOper
 
     # Se fija si es un arreglo
     if p[-2] != None:  
@@ -732,15 +737,18 @@ def p_cuadlee(p):
     '''
     global pilaO, memoriaVir, tempcount, countCuad, current_type, constTable
     # Obtenemos el valor a leer
-    resultado = pilaO.pop()
     # Obtenemos la memoria temporal e incrementamos y apunta a la siguiente direccion disponible
-    indexVal = returnMemoryType("Temp", constTable[resultado]["Type"])
+    newid = pilaO[-1]
+
+    indexVal = returnMemoryType("Temp", directorio_fun[current_func[-1]]["Vars"][newid]["Type"])
+
     result = memoriaVir[indexVal]
     memoriaVir[indexVal] += 1
     # Generamos el cuadruplo
-    aux = cuadruplos("lee",resultado,"",result)
+    aux = cuadruplos("lee","","",result)
     cuad.append(aux)
     # Incrementamos los contadores
+    pilaO.append(result)
     countCuad +=1
     tempcount += 1
 
@@ -778,18 +786,13 @@ def p_genGTF(p):
     genGTF : 
     '''
     # Generamos el primer cuadruplo para goToF, guardamos su posicion para el jump a futuro
-    global pilaO, pjumps, pelse, countCuad
+    global pilaO, pjumps, countCuad
     # Obtenemos el valor booleano para el if
     resultado = pilaO.pop()
     # Generamos el cuadruplo
     cuad.append(cuadruplos("GotoF",resultado,"",0))
     # Apendamos los valores a sus repectivas pilas
     pjumps.append(len(cuad) - 1)
-    if (not pelse or pelse[-1] != 'elif') and p[-5] != "while":
-        # Si no es else o ifelse se agrega el valor "if" a la pila else
-        pelse.append("if")
-        saltoselse.append({"if" : len(cuad) - 1})
-    # Incrementamos los contadores
     countCuad += 1
 
 # Generamos el cuadruplo GOTO para else, guardamos su posicion para el jump a futuro
@@ -797,18 +800,17 @@ def p_genGT(p):
     '''
     genGT : 
     '''
-    global cuad, pjumps, pelse, countCuad
+    global cuad, pjumps, countCuad
     # Si el token es else generamos el cuadruplo
-    if p[-1] == "else":
-        # Generar cuadruplo
-        cuad.append(cuadruplos("Goto","","",0))
-        # Apendamos los valores a sus repectivas pilas
-        pjumps.append(len(cuad) - 1)
-        # Incrementamos los contadores
-        countCuad +=1
+    # Generar cuadruplo
+    cuad.append(cuadruplos("Goto","","",0))
+    end = pjumps.pop()
+    resultado = cuad[end].rightop
     # Apendamos los valores a sus repectivas pilas
-    pelse.append(p[-1])  
-    saltoselse[-1][p[-1]] = len(cuad) -1
+    pjumps.append(len(cuad) - 1)
+    cuad[end] = cuadruplos("GotoF",resultado,"",len(cuad))
+    # Incrementamos los contadores
+    countCuad +=1
 
 
 # Ingresa el valor del salto a los goto's generados
@@ -816,30 +818,12 @@ def p_fillGoto(p):
     '''
     fillGoto : 
     '''
-    global pjumps, cuad, pelse
+    global pjumps, cuad
     if pjumps:
         # Sacamos los valores de las pilas: el salto y GOTO o GOTOF
         end = pjumps.pop()
-        resultado = cuad[end].rightop
         # Se les da el valor del jump apropiado, distingue si es goToF o goTo. 
-        if cuad[end].op == "GotoF":
-            # Si es un else if debe considerar que tiene que dar un salto mas
-            if pelse.pop() == "elif":
-                cuad[end] = cuadruplos("GotoF",resultado,"",len(cuad))
-                ifLoc = saltoselse[-1]['if']
-                cuad[ifLoc] = cuadruplos(cuad[ifLoc].op, cuad[ifLoc].rightop, cuad[ifLoc].leftop, cuad[ifLoc].top + 1)
-                print("if", cuad[ifLoc].top + 1, "elif",len(cuad))
-            else:
-                if 'elif' in saltoselse[-1].values():
-                    ifLoc = saltoselse[-1]['ifelse']
-                    cuad[ifLoc] = cuadruplos(cuad[ifLoc].op, cuad[ifLoc].rightop, cuad[ifLoc].leftop, cuad[ifLoc].top - 1)
-                    print("if", cuad[ifLoc].top - 1)
-                cuad[end] = cuadruplos("GotoF",resultado,"",len(cuad) + 1)
-        elif cuad[end].op == "Goto" :
-            # Genera el cuadruplo GoTo else
-            pelse.pop()
-            cuad[end] = cuadruplos("Goto",resultado,"",len(cuad)) 
-            saltoselse.pop()
+        cuad[end] = cuadruplos(cuad[end].op, cuad[end].rightop, cuad[end].leftop,len(cuad))
 
 # While
 def p_storeWhile(p):
@@ -1070,7 +1054,8 @@ def p_verLastParam(p):
         # Cuadruplo gosub
         currentCall = pCurrentCall.pop()
         type = directorio_fun[currentCall]["Type"]
-        result1, memoriaVir = obtenMemVir(currentCall, type, memoriaVir, 1)
+        if type != 'void':
+            result1, memoriaVir = obtenMemVir(currentCall, type, memoriaVir, 1)
         cuad.append(cuadruplos("GOSUB", currentCall,"",directorio_fun[currentCall]["CONT"]))
         # Si no es void la funcion 
         if directorio_fun[currentCall]["Type"] != "void":
@@ -1162,7 +1147,7 @@ def p_crearCuadA(p):
     global dimNode, cuad, tempcount, pilaO, pilaDim, memoriaVir, directorio_fun, current_name,arraux, ptype, current_type
     # Ingresar poner dirrecion de memoria a los limites
     memoriaVir, ptype, current_type, pilaO = generaMemoriaConst("intConst", memoriaVir, "int", ptype, pilaO)
-    constTable[pilaO[-1]] = {"Type" : current_type, pilaO[-1] :dimNode[0]}
+    constTable[pilaO[-1]] = {"Type" : current_type, pilaO[-1] : int(dimNode[0])}
     pilaO.pop()
     ptype.pop()
    
@@ -1217,6 +1202,8 @@ def p_crearCuadB(p):
     constTable[pilaO[-1]] = {"Type" : current_type, pilaO[-1] :virtualAddress}
     ptype.pop()
     cuad.append(cuadruplos('+', temp1, pilaO.pop(), temp2))
+    if current_func[-1] == 'global' and len(current_func) > 1:
+        current_func.pop()
 
 def p_agregarVar(p):
     '''
@@ -1228,8 +1215,14 @@ def p_agregarVar(p):
         arraux = p[-2]
 
     current_name = p[-2]
+    if p[-2] not in directorio_fun[current_func[-1]]["Vars"]:
+        current_func.append('global')
+
+
     pilaO.append(directorio_fun[current_func[-1]]["Vars"][p[-2]]["Memoria"])
     ptype.append(directorio_fun[current_func[-1]]["Vars"][current_name]["Type"])
+    
+   
 
 # Verificamos que se este llamando a un arreglo
 def p_verifyAEx(p):
@@ -1273,9 +1266,9 @@ def p_increaseDim(p):
 yacc.yacc()
 
 def runLexerParser(fileTxt, valoresMemoria):
-    global current_name, current_type, dim, r, dimNode, arraux, pOper, pilaO, cuad, ptype, pjumps, pelse, saltoselse, pParam, paramTable, pilaDim, pCurrentCall, obj, current_func, countCuad, parameterCounter, tempcount, memoriaTemp, memoriaVir, constTable, vFinal
+    global current_name, current_type, dim, r, dimNode, arraux, pOper, pilaO, cuad, ptype, pjumps, pParam, paramTable, pilaDim, pCurrentCall, obj, current_func, countCuad, parameterCounter, tempcount, memoriaTemp, memoriaVir, constTable, vFinal
     current_name, current_type, dimNode, arraux = iniVariables()
-    pOper, pilaO, cuad, ptype, pjumps, pelse, saltoselse, pParam, paramTable, pilaDim, pCurrentCall, obj, current_func = iniArreglosPilas()
+    pOper, pilaO, cuad, ptype, pjumps, pParam, paramTable, pilaDim, pCurrentCall, obj, current_func = iniArreglosPilas()
     countCuad, parameterCounter, tempcount, vFinal, dim, r = iniContadores()
     memoriaTemp, memoriaVir, constTable = iniDiccionarios()
     # Vamos a definir las direcciones iniciales para la memoria virtual

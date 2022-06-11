@@ -1,0 +1,14 @@
+Compilacion exitosa!
+20
+6765
+9
+34
+8
+21
+7
+13
+Compilacion exitosa!
+'escribe radio'
+'escribe lado'
+4.0
+12.56

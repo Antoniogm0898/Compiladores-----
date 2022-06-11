@@ -38,12 +38,14 @@ def runCode(code, generateOBJ, loadedText):
     obj = runLexerParser(fullText, memoria)
     writeOBJ(filename, obj)
 
-
     if generateOBJ:
         editPrintLogger("Se imprimio de el " + filename + " manera exitosa")
+        cuadruplos, dirFunc, consTable = readOBJ(filename)
+        runVM(cuadruplos, dirFunc, consTable)
     elif loadedText:
         cuadruplos, dirFunc, consTable = readOBJ(filename)
         runVM(cuadruplos, dirFunc, consTable)
+        os.remove(filename)
     else:
         cuadruplos, dirFunc, consTable = readOBJ(filename)
         os.remove(filename)

@@ -85,21 +85,22 @@ def getMemoryType(addresVal, val):
     # Calculo para predecir el tipo
 
     addrsNumber = round(int(addresVal) / 1000) % 4
-    if addrsNumber ==  0:
-        if val == '-0.0':
-            val = '0'
-
-        val = int(float(val))   
-        
-    elif addrsNumber == 1:
-        val = float(val)
-    elif addrsNumber == 2:
-        val = str(val)
-    else:
-        if val == 'False':
-            val = False
-        else:
-            val = True
+    try:
+        if addrsNumber ==  0:
+            if val == '-0.0':
+                val = '0'
+            val = int(float(val))         
+        elif addrsNumber == 1:
+            val = float(val)
+        elif addrsNumber == 2:
+            val = str(val)
+        elif addrsNumber == 3:
+            if val == 'False':
+                val = False
+            else:
+                val = True
+    except:
+        catalogoErrores([13, val, type(val)])
     return val
 
 # Funcion para correr la maquina virtual
@@ -226,6 +227,8 @@ def runVM(cuadruplos, dirFunc, memoriaConst):
             memoriaLocal.pop()
             count = returnLoc.pop()
         elif cuadruplos[count].op == "lee":
+            memoriaTemp[cuadruplos[count].top] = input()
+
             count += 1
 
         # en los gotos asignamos al contador con el salto correspondiente
